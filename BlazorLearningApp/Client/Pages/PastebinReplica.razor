@@ -1,0 +1,30 @@
+﻿@page "/pastebinr"
+@using BlazorLearningApp.Shared.Model
+@inject HttpClient Http
+@inject NavigationManager NavigationManager
+
+<h3>Pastebin Replica</h3>
+<h5 style="color: dimgrey">New Paste</h5>
+<textarea @bind="paste.Value" id="postform-text" autofocus="" aria-required="true" style="overflow: hidden; overflow-wrap: break-word; height: 300px;width: 80%"></textarea>
+<h5 style="color: dimgrey">Optional Paste Settings</h5>
+<div style=" display: flex; margin-top: 8px ">
+    <p style="width: 15%;">Expiration in days</p>
+    <input @bind="paste.Expiration" type="number" class="form-control" aria-label="Text input with checkbox" style="width: 30%;">
+</div>
+<div style="display: flex; margin-top: 8px;">
+    <p style="width: 15%;">Paste Name</p>
+    <input @bind="paste.Name" type="text" class="form-control" style="width: 30%;">
+</div>
+<button style="margin-top:8px" class="btn btn-primary" @onclick="@CreateDocument">Create Paste</button>
+
+@code {
+    Paste paste = new Paste();
+
+    private async Task CreateDocument()
+    {
+        // make controller call
+        var pasteId = await (await Http.PostAsJsonAsync<Paste>("Paste", paste)).Content.ReadAsStringAsync();
+        // redirect to page
+        NavigationManager.NavigateTo($"/pastebinr/{pasteId}");
+    }
+}

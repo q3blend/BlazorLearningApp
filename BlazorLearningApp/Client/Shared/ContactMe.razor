@@ -1,0 +1,13 @@
+﻿<div class="alert alert-secondary mt-4 text-center" role="alert">
+    <span class="text-nowrap">
+        Contact me on
+        <a target="_blank" class="font-weight-bold" href="mailto:@Email">here</a>
+    </span>
+    for feedback.
+</div>
+
+@code {
+    // Demonstrates how a parent component can supply parameters
+    [Parameter]
+    public string Email { get; set; }
+}

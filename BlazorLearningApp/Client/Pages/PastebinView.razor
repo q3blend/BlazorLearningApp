@@ -1,0 +1,32 @@
+﻿@page "/pastebinr/{Id}"
+@using BlazorLearningApp.Shared.Model
+@inject HttpClient Http
+@inject IJSRuntime JSRuntime
+@inject NavigationManager NavigationManager
+
+<h3>Pastebin Replica</h3>
+<h5 style="color: dimgrey">@paste.Name</h5>
+<textarea @bind="paste.Value" id="postform-text" autofocus="" aria-required="true" style="overflow: hidden; overflow-wrap: break-word; height: 300px;width: 80%" readonly></textarea>
+<div class="form-inline">
+    <input class="form-control" readonly type="text" value="@text" />
+    <button type="button" class="btn btn-primary" @onclick="CopyTextToClipboard">Copy</button>
+</div>
+@code {
+    [Parameter]
+    public string Id { get; set; }
+
+    Paste paste = new Paste();
+
+    string text = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        this.paste = await Http.GetFromJsonAsync<Paste>($"Paste/{this.Id}");
+        this.text = NavigationManager.Uri;
+    }
+
+    private async Task CopyTextToClipboard()
+    {
+        await JSRuntime.InvokeVoidAsync("navigator.clipboard.writeText", text);
+    }
+}
