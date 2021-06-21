@@ -45,8 +45,8 @@ namespace BlazorLearningApp.Server
             CloudStorageAccount storageAccount = CloudStorageAccount.Parse(this.Configuration.GetValue<string>("ConnectionStrings:StorageAccount"));
             CloudBlobClient blobClient = storageAccount.CreateCloudBlobClient();
             var container = blobClient.GetContainerReference("pastebinr");
-            var task = Task.Run(async () => { await container.CreateIfNotExistsAsync(); });
-            task.Wait();
+            //var task = Task.Run(async () => { await container.CreateIfNotExistsAsync(); });
+            //task.Wait();
             services.AddSingleton(container);
         }
 

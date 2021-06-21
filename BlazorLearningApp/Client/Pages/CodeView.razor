@@ -1,0 +1,67 @@
+﻿@page "/code/{Id}"
+@using BlazorLearningApp.Shared.Model
+@using Microsoft.AspNetCore.SignalR.Client
+@using System.Timers
+@inject HttpClient Http
+@inject NavigationManager NavigationManager
+@implements IAsyncDisposable
+
+<h3>CodeView</h3>
+<textarea @bind="@CurrentValue" id="postform-text" autofocus="" aria-required="true" style="overflow: hidden; overflow-wrap: break-word; height: 90%;width: 90%" @oninput="Send"></textarea>
+<div class="form-inline">
+</div>
+
+
+@code {
+    [Parameter]
+    public string Id { get; set; }
+
+    private HubConnection hubConnection;
+    private Timer timer;
+    private string OldValue;
+    private string CurrentValue { get; set; }
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        hubConnection = new HubConnectionBuilder()
+            .WithUrl(NavigationManager.ToAbsoluteUri($"/codesharehub?codeId={this.Id}"))
+            .Build();
+
+        hubConnection.On<string>("ReceiveMessage", (code) =>
+        {
+            this.CurrentValue = code;
+            this.OldValue = code;
+            StateHasChanged();
+        });
+
+        await hubConnection.StartAsync();
+
+        // init timer
+        timer = new Timer();
+        timer.Interval = 200;
+        timer.Elapsed += OnTimerInterval;
+        timer.AutoReset = true;
+        // Start the timer
+        timer.Start();
+    }
+
+    private async void OnTimerInterval(object sender, ElapsedEventArgs e)
+    {
+        if(this.OldValue != this.CurrentValue)
+        {
+            this.OldValue = this.CurrentValue;
+            await hubConnection.SendAsync("SendUpdate", this.CurrentValue, this.Id);
+        }
+    }
+
+    void Send(ChangeEventArgs e)
+    {
+        CurrentValue = (string)e.Value;
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        await hubConnection.DisposeAsync();
+    }
+}
