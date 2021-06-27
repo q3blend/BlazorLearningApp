@@ -1,0 +1,17 @@
+﻿@page "/codeshare"
+@inject HttpClient Http
+@inject NavigationManager NavigationManager
+
+<h3>CodeShare</h3>
+<p>
+    An online code editor for interviews, troubleshooting, teaching & more…
+</p>
+<button style="margin-top:8px" class="btn btn-primary" @onclick="@ShareCode">Share Code Now</button>
+
+@code {
+    private async Task ShareCode()
+    {
+        // redirect to page
+        NavigationManager.NavigateTo($"/code/{Guid.NewGuid()}");
+    }
+}
