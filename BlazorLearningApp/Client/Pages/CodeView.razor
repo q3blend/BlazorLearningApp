@@ -3,11 +3,17 @@
 @using Microsoft.AspNetCore.SignalR.Client
 @using System.Timers
 @inject HttpClient Http
+@inject IJSRuntime JSRuntime
 @inject NavigationManager NavigationManager
 @implements IAsyncDisposable
 
-<h3>CodeView</h3>
-<textarea @bind="@CurrentValue" id="postform-text" autofocus="" aria-required="true" style="overflow: hidden; overflow-wrap: break-word; height: 90%;width: 90%" @oninput="Send"></textarea>
+
+<h3>Code View</h3>
+<div class="form-inline">
+    <input class="form-control" readonly type="text" value="@text" />
+    <button type="button" class="btn btn-primary" @onclick="CopyTextToClipboard">Copy</button>
+</div>
+<textarea @bind="@CurrentValue" id="postform-text" autofocus="" aria-required="true" style="overflow: hidden; overflow-wrap: break-word; height: 90%;width: 90%;margin-top:12px;" @oninput="Send"></textarea>
 <div class="form-inline">
 </div>
 
@@ -20,13 +26,15 @@
     private Timer timer;
     private string OldValue;
     private string CurrentValue { get; set; }
+    private string text = string.Empty;
 
 
     protected override async Task OnInitializedAsync()
     {
+        this.text = NavigationManager.Uri;
         hubConnection = new HubConnectionBuilder()
-            .WithUrl(NavigationManager.ToAbsoluteUri($"/codesharehub?codeId={this.Id}"))
-            .Build();
+        .WithUrl(NavigationManager.ToAbsoluteUri($"/codesharehub?codeId={this.Id}"))
+        .Build();
 
         hubConnection.On<string>("ReceiveMessage", (code) =>
         {
@@ -48,7 +56,7 @@
 
     private async void OnTimerInterval(object sender, ElapsedEventArgs e)
     {
-        if(this.OldValue != this.CurrentValue)
+        if (this.OldValue != this.CurrentValue)
         {
             this.OldValue = this.CurrentValue;
             await hubConnection.SendAsync("SendUpdate", this.CurrentValue, this.Id);
@@ -63,5 +71,10 @@
     public async ValueTask DisposeAsync()
     {
         await hubConnection.DisposeAsync();
+    }
+
+    private async Task CopyTextToClipboard()
+    {
+        await JSRuntime.InvokeVoidAsync("navigator.clipboard.writeText", text);
     }
 }
